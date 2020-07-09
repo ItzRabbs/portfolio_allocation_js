@@ -1,6 +1,34 @@
-### 0.0.8 - XX/YY/20ZZ
+### 0.0.9 - XX/XX/XXXX
+- Removed comments from the generated Google Sheet script using a new grunt plugin
+- Added a method to extract the columns of a matrix
+- Added a method to generate random normal numbers, using the inverse method
+- Added a method to generate random matrices made of random normal numbers
+- Added a method to generate random orthogonal matrices
+- Added a method to generate random correlation matrices
+- Reworked the internals of the risk budgeting portfolio algorithm, and implemented 3 new coordinates sampler algorithms
+- Fixed bug https://github.com/lequant40/portfolio_allocation_js/issues/5 related to MVO optimization with maxTargetVolatility optimization method
+- Added min/max weights constraints in the ERC and RB portfolio allocation methods
+- Redesigned the meanVarianceEfficientFrontierPortfolios method to output portfolios less concentrated in high volatility; now, the generation is uniform on all efficient segments
+- Added a method to generate random normal numbers, with positive support (i.e., truncated to R^+)
+- Added a method to generate random covariance matrices
+- Added a method to test if a matrix is symmetric
+- Fixed bug https://github.com/lequant40/portfolio_allocation_js/issues/6 related to MVO optimization (corner portfolios computation)
+
+### 0.0.8 - 16/04/2020
 - Introduced a function simplexEmptinessCheck_ to avoid copy/pasting feasibility checks on the restricted simplex everywhere
-- Added min/max exposure constraints, and min/max weights contraints in the random portfolio generation method
+- Added min/max exposure constraints, and min/max weights constraints in the random portfolio generation method
+- Proper management of infeasible subsets in the randomSubspaceMeanVarianceOptimizationWeights method
+- Added a method to generate random permutations of integers
+- Used an accurate algorithm to compute the l2 norm of vectors in the methods hypersphereRandomSampler_ and simplexDirectionRandomSampler_
+- Added a method to generate all the permutations of a n-set (Heap's algorithm)
+- Added a method to compute the permutation entropy of a time series
+- Added an hyper rectangle regular grid sampler
+- Added a unidimensional root finding method: the bisection method
+- Added the computation of the best constantly rebalanced portfolio
+- Improved the convergence of the geometric median computation
+- Added a unidimensional optimization method method: the golden section search method
+- Added a generating set search optimization method
+- Added the computation of the minimum tracking error portfolio
 
 ### 0.0.7 - 25/05/2019
 - Redesigned the meanVarianceEfficientFrontier method to compute a desired number of efficient portfolios with their returns and volatilities
