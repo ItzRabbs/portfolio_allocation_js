@@ -1,7 +1,7 @@
 {
   "name": "portfolio-allocation",
-  "version": "0.0.8",
-  "date": "2020-04-16",
+  "version": "0.0.10",
+  "date": "2020-09-14",
   "author": "Roman Rubsamen <roman.rubsamen@gmail.com>",
   "contributors": [],
   "description": "A JavaScript library to allocate and optimize financial portfolios.",
@@ -12,16 +12,20 @@
   },
   "keywords": [
     "quantitative finance",
-    "google sheets",
     "portfolio allocation",
-    "portfolio optimization"
+    "portfolio optimization",
+    "mean variance optimization",
+	"minimum variance portfolio",
+	"maximum sharpe portfolio",
+	"mean variance efficient frontier",
+	"risk parity"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/lequant40/portfolio_allocation_js.git"
   },
   "devDependencies": {
-    "grunt": "^1.0.4",
+    "grunt": "^1.2.1",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-qunit": "^3.1.0",
     "grunt-contrib-uglify": "^4.0.1",
@@ -34,7 +38,7 @@
   },
   "main": "dist/portfolio_allocation.dist.min.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test-dist"
   },
   "dependencies": {}
 }

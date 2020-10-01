@@ -34,7 +34,6 @@ QUnit.module('Matrix internal module', {
 });
 
 
-
 QUnit.test('Matrix basic manipulations', function(assert) {    
   // Test non square matrix using random data
   {
@@ -171,6 +170,118 @@ QUnit.test('Matrix-matrix elementwise product', function(assert) {
 
   // TODO: use random data
 });
+
+
+QUnit.test('Matrix rows and columns swaps', function(assert) {    
+	// Test with static data
+	//
+	// Swap the same row
+	{
+		var mat = new PortfolioAllocation.Matrix([[1,2], [4,5]]);
+
+		var resMatCopy = mat.swapRows(1,1);
+		var resMatInPlace = mat.swapRows(1,1, {inPlace: true});
+		var expectedMat = new PortfolioAllocation.Matrix(mat);
+		assert.equal(PortfolioAllocation.Matrix.areEqual(resMatCopy, expectedMat), true, 'Swap the same row, copy');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(resMatInPlace, expectedMat), true, 'Swap the same row, in place');
+
+		mat.touch = true;
+		assert.equal(resMatCopy.touch, undefined, 'Swap the same row, copy, original matrix not altered');
+		assert.equal(resMatInPlace.touch, true, 'Swap the same row, in place, original matrix altered');
+	} 
+
+	// Test with static data
+	//
+	// Swap two rows
+	{
+		var mat = new PortfolioAllocation.Matrix([[1,2], [4,5]]);
+
+		var resMatCopy = mat.swapRows(1,2);
+		var resMatInPlace = mat.swapRows(1,2, {inPlace: true});
+		var expectedMat = new PortfolioAllocation.Matrix([[4,5], [1,2]]);
+		assert.equal(PortfolioAllocation.Matrix.areEqual(resMatCopy, expectedMat), true, 'Swap two rows, copy');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(resMatInPlace, expectedMat), true, 'Swap two rows, in place');
+
+		mat.touch = true;
+		assert.equal(resMatCopy.touch, undefined, 'Swap two rows, copy, original matrix not altered');
+		assert.equal(resMatInPlace.touch, true, 'Swap two rows, in place, original matrix altered');
+	} 
+	
+	
+	// Test with static data
+	//
+	// Swap the same column
+	{
+		var mat = new PortfolioAllocation.Matrix([[1,2], [4,5]]);
+
+		var resMatCopy = mat.swapColumns(1,1);
+		var resMatInPlace = mat.swapColumns(1,1, {inPlace: true});
+		var expectedMat = new PortfolioAllocation.Matrix(mat);
+		assert.equal(PortfolioAllocation.Matrix.areEqual(resMatCopy, expectedMat), true, 'Swap the same row, copy');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(resMatInPlace, expectedMat), true, 'Swap the same row, in place');
+
+		mat.touch = true;
+		assert.equal(resMatCopy.touch, undefined, 'Swap the same row, copy, original matrix not altered');
+		assert.equal(resMatInPlace.touch, true, 'Swap the same row, in place, original matrix altered');
+	} 
+
+	// Test with static data
+	//
+	// Swap two columns
+	{
+		var mat = new PortfolioAllocation.Matrix([[1,2], [4,5]]);
+
+		var resMatCopy = mat.swapColumns(1,2);
+		var resMatInPlace = mat.swapColumns(1,2, {inPlace: true});
+		var expectedMat = new PortfolioAllocation.Matrix([[2,1], [5,4]]);
+		assert.equal(PortfolioAllocation.Matrix.areEqual(resMatCopy, expectedMat), true, 'Swap two columns, copy');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(resMatInPlace, expectedMat), true, 'Swap two columns, in place');
+
+		mat.touch = true;
+		assert.equal(resMatCopy.touch, undefined, 'Swap two columns, copy, original matrix not altered');
+		assert.equal(resMatInPlace.touch, true, 'Swap two columns, in place, original matrix altered');
+	}
+
+  // TODO: use random data
+});
+
+
+QUnit.test('LU decomposition', function(assert) {    
+	// Test with static data
+	{
+		var mat = new PortfolioAllocation.Matrix([[3,17, 10], [2, 4, -2], [6, 18, -12]]);
+
+		// Test the matrix format for the permutation matrices
+		var expectedL = new PortfolioAllocation.Matrix([[1, 0, 0], [0.9444444444444444, 1, 0], [0.2222222222222222, 0.031249999999999993, 1]]);
+		var expectedU = new PortfolioAllocation.Matrix([[18, -12, 6], [0, 21.333333333333332, -2.666666666666666], [0, 0, 0.75]]);
+		var expectedP = new PortfolioAllocation.Matrix([[0, 0, 1], [1 ,0 ,0], [0, 1, 0]]);
+		var expectedQ = new PortfolioAllocation.Matrix([[0, 0, 1], [1 ,0 ,0], [0, 1, 0]]);
+
+		var lu = PortfolioAllocation.Matrix.luDecomposition(mat);
+		assert.equal(PortfolioAllocation.Matrix.areEqual(lu.lowerTriangular, expectedL), true, 'Test #1, L');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(lu.upperTriangular, expectedU), true, 'Test #1, U');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(lu.rowPermutation, expectedP), true, 'Test #1, P');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(lu.columnPermutation, expectedQ), true, 'Test #1, Q');
+
+		var mlu = PortfolioAllocation.Matrix.xy(lu.lowerTriangular, lu.upperTriangular);
+		var mpaq = PortfolioAllocation.Matrix.xy(lu.rowPermutation, PortfolioAllocation.Matrix.xy(mat, lu.columnPermutation));
+		assert.equal(PortfolioAllocation.Matrix.areEqual(mlu, mpaq), true, 'Test #1, PAQ = LU');
+
+		
+		// Test the vector format for the permutation matrices
+		var expectedPvector = new PortfolioAllocation.Matrix([3, 1, 2]);
+		var expectedQvector = new PortfolioAllocation.Matrix([2, 3, 1]);
+
+		var lu = PortfolioAllocation.Matrix.luDecomposition(mat, {permutationsOutputForm: "vector"});
+		assert.equal(PortfolioAllocation.Matrix.areEqual(lu.lowerTriangular, expectedL), true, 'Test #1, L vector');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(lu.upperTriangular, expectedU), true, 'Test #1, U vector');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(lu.rowPermutation, expectedPvector), true, 'Test #1, P vector');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(lu.columnPermutation, expectedQvector), true, 'Test #1, Q vector');
+	}
+
+	// TODO: Test with random data
+});
+
 
 
 QUnit.test('Matrix element wise function', function(assert) {    
@@ -345,10 +456,213 @@ QUnit.test('QR decomposition', function(assert) {
 	  assert.equal(PortfolioAllocation.Matrix.areEqual(qLessR, R), true, 'QR decomposition, Q less - #2');
   }
   
-  // TODO: Test using random data: check Q,R dimensions, check Q*R = A, check R upper triangular, check Q orthogonal: Q*q^t = Identity (m)
+  // TODO: Test using random data: check Q,R dimensions, check Q*R = A, check R upper triangular, check Q orthogonal: Q*Q^t = Identity (m)
   
   // TODO: Test error case
 });
+
+QUnit.test('Cholesky decomposition', function(assert) {    
+  // Test using static data  
+  {
+	  // Computation of the Cholesky decomposition, which must fail because the matrix is not positive definite
+	  var mat = new PortfolioAllocation.Matrix([[0.005, 0.897, 0.698], [0.897, 1.003, 0.302], [0.698, 0.302, 1.001]]);
+	  assert.throws(function() { PortfolioAllocation.Matrix.choleskyDecomposition(mat); },
+						 new Error('input matrix must be positive definite'),
+						 "Cholesky decomposition - Non definite positive");
+
+	  // Computation of the Cholesky decomposition
+	  var mat = new PortfolioAllocation.Matrix([[1.005, 0.897, 0.698], [0.897, 1.003, 0.302], [0.698, 0.302, 1.001]]);
+	  var G = PortfolioAllocation.Matrix.choleskyDecomposition(mat);
+	  
+	  // Ensure G is lower triangular with positive diagonal elements
+	  var lowerTriangular = true;
+	  var positiveDiagonalElements = true;
+	  for (var i = 1; i <= 3; ++i) {
+		  if (G.getValueAt(i,i) <= 0) {
+			  positiveDiagonalElements = false;
+		  }
+		  
+		  for (var j = i+1; j <= 3; ++j) {
+			  if (G.getValueAt(i,j) != 0) {
+				  lowerTriangular = false;
+			  }
+		  }
+	  }
+	  assert.equal(lowerTriangular, true, 'Cholesky decomposition - Lower triangular');
+	  assert.equal(positiveDiagonalElements, true, 'Cholesky decomposition - Positive diagonal elements');
+	  
+	  // Ensure A = G*G^t
+	  var mmat = PortfolioAllocation.Matrix.axty(1, G, G);
+	  assert.equal(PortfolioAllocation.Matrix.areEqual(mat, mmat), true, 'Cholesky decomposition - A = G*G^t');
+						 
+  }
+  
+  // TODO: Test using random data
+  
+  // TODO: Test error case
+});
+
+
+QUnit.test('Functions for correlation matrices polishing and testing', function(assert) {    
+	// Test error cases
+	{
+		// Non square matrix
+		var mat = PortfolioAllocation.Matrix.normrnd(10, 8);
+
+		assert.throws(function() { mat.symmetrize(); },
+						 new Error('matrix is not square: (10,8)'),
+						 "Symmetrization - Non square matrix");
+						 
+		assert.throws(function() { mat.unitDiagonalize(); },
+						 new Error('matrix is not square: (10,8)'),
+						 "Unit diagonalization - Non square matrix");
+		
+        assert.equal(mat.isUnitDiagonal(), false, 'Unit diagonal testing - Non square matrix');
+		
+		// Non strictly unit diagonal matrix
+		var mat = PortfolioAllocation.Matrix.identity(3);
+		assert.equal(mat.isUnitDiagonal(), true, 'Unit diagonal testing - Identity');
+		mat.setValueAt(1,1,1 + 1e-12);
+		assert.equal(mat.isUnitDiagonal(), false, 'Unit diagonal testing - Identity perturbed');
+		assert.equal(mat.isUnitDiagonal(1.01e-12), true, 'Unit diagonal testing - Identity perturbed #2');
+		
+		// Test for correlation matrix
+		var mat = PortfolioAllocation.Matrix.normrnd(10, 8);
+		assert.equal(mat.isCorrelationMatrix(), false, 'Correlation matrix testing - non square');
+		mat = PortfolioAllocation.Matrix.normrnd(10, 10);
+		assert.equal(mat.isCorrelationMatrix(), false, 'Correlation matrix testing - non symmetric');
+		mat = PortfolioAllocation.Matrix.normrnd(10, 10).symmetrize();
+		assert.equal(mat.isCorrelationMatrix(), false, 'Correlation matrix testing - non unit diagonal');
+		mat = PortfolioAllocation.Matrix.normrnd(10, 10).symmetrize().unitDiagonalize();
+		assert.equal(mat.isCorrelationMatrix(), false, 'Correlation matrix testing - non semi definite positive (unless bad luck)');
+	}
+	
+	// Test using static data 
+	{	  
+		// Test matrix
+		var mat = new PortfolioAllocation.Matrix([[1,2], [4,5]]);
+		
+		// Test symmetrization		
+		var expectedMat = new PortfolioAllocation.Matrix([[1,3], [3,5]]);
+		var diagMat = mat.symmetrize();		
+		assert.deepEqual(diagMat.toArray(), expectedMat.toArray(), 'Functions for correlation matrices polishing and testing - D not sorted by default');
+		assert.equal(diagMat.isUnitDiagonal(), false, 'Unit diagonal testing - Non unit diagonal matrix');
+		
+		// Test unit diagonalization		
+		var expectedMat = new PortfolioAllocation.Matrix([[1,2], [4,1]]);
+		var unitDiagMat = mat.unitDiagonalize();		
+		assert.deepEqual(unitDiagMat.toArray(), expectedMat.toArray(), 'Functions for correlation matrices polishing and testing - D not sorted by default');
+		assert.equal(unitDiagMat.isUnitDiagonal(), true, 'Unit diagonal testing - Unit diagonal matrix');
+		
+		// Test for correlation matrix
+		var mat = new PortfolioAllocation.Matrix([[1,0.1], [0.1,1]]);
+		assert.equal(mat.isCorrelationMatrix(), true, 'Correlation matrix testing - definite positive');
+		
+		var mat = new PortfolioAllocation.Matrix([[1,1], [1,1]]);
+		assert.equal(mat.isCorrelationMatrix(), true, 'Correlation matrix testing - semi definite positive');
+
+	}
+});
+
+
+QUnit.test('Eigenvalues and eigenvectors computation', function(assert) {    
+	// Test error cases
+	{
+		// Non square matrix
+		var mat = PortfolioAllocation.Matrix.normrnd(10, 8);
+		assert.throws(function() { PortfolioAllocation.Matrix.eig(mat); },
+						 new Error('input matrix must be symmetric'),
+						 "Eigenvalues and eigenvectors computation - Non square matrix");
+
+		
+		// Non symmetric matrix
+		var mat = PortfolioAllocation.Matrix.normrnd(10, 10);
+		assert.throws(function() { PortfolioAllocation.Matrix.eig(mat); },
+						 new Error('input matrix must be symmetric'),
+						 "Eigenvalues and eigenvectors computation - Non symmetric matrix");
+
+	}
+	
+	// Test using static data for numerical errors
+	// Reference: https://research.wmz.ninja/articles/2018/08/symmetrize-the-input-matrix-before-eigendecomposition.html
+	{
+		// Perturb the identity matrix so that it is non strictly symmetric
+		var mat = PortfolioAllocation.Matrix.identity(3);
+		mat.setValueAt(1,2,1e-15);
+		
+		// Computation of the eigenvalues and eigenvectors, which must work thanks to
+		// the check on default numerical symmetry.
+		var jacobi = PortfolioAllocation.Matrix.eig(mat);
+		var V = jacobi[0];
+		var D = jacobi[1];
+		
+		// Eigenvalues of identity matrix must all be numerically equal to 1
+		var expectedEigenvalues = PortfolioAllocation.Matrix([1, 1, 1]);
+		assert.equal(PortfolioAllocation.Matrix.areEqual(D, expectedEigenvalues, 1e-14), true, 'Eigenvalues and eigenvectors computation - perturbation of identity matrix #1');
+		
+		// Eigenvectors of identity matrix are any vectors, so that the matrix V must simply be orthogonal 
+		assert.equal(PortfolioAllocation.Matrix.areEqual(PortfolioAllocation.Matrix.axty(1,V,V), 
+		                                                 PortfolioAllocation.Matrix.identity(3), 1e-14), true, 'Eigenvalues and eigenvectors computation - perturbation of identity matrix #2');
+	}
+		
+	// Test using static data 
+	// Reference: The Jacobi Method for Real Symmetric Matrices, RUTISHAUSER
+	{	  
+		var mat = PortfolioAllocation.Matrix.fill(30, 30, function(i,j) { return Math.max(i,j);} );
+	  
+		// Computation of the eigenvalues and eigenvectors
+		var jacobi = PortfolioAllocation.Matrix.eig(mat);
+		var V = jacobi[0];
+		var D = jacobi[1];
+	  
+		// Check that V is a square orthonormal matrix
+		assert.equal(V.isSquare(), true, 'Eigenvalues and eigenvectors computation - V square');
+		assert.equal(V.nbRows == 30, true, 'Eigenvalues and eigenvectors computation - V matrix of order 30');
+		assert.equal(PortfolioAllocation.Matrix.areEqual(PortfolioAllocation.Matrix.txy(V, V), 
+		                                                 PortfolioAllocation.Matrix.identity(30), 1e-14), true, 'Eigenvalues and eigenvectors computation - V orthonormal');	
+	
+		// Check that D is a vector
+		assert.equal(D.isVector(), true, 'Eigenvalues and eigenvectors computation - D vector');
+		assert.equal(D.nbRows == 30, true, 'Eigenvalues and eigenvectors computation - D vector of order 30');
+		
+		// Check that D is not sorted
+		var isSorted = true;
+		for (var i = 1; i < 30; ++i) {
+			if ( D.data[i] > D.data[i-1] ) {
+				isSorted = false;
+				break;
+			}
+		}
+		assert.equal(isSorted, false, 'Eigenvalues and eigenvectors computation - D not sorted by default');
+		
+		// Check that A = V * Diag(D) * V^t
+		var mmat = PortfolioAllocation.Matrix.xy(V, PortfolioAllocation.Matrix.xy(PortfolioAllocation.Matrix.diagonal(D), V.transpose()));
+		assert.equal(PortfolioAllocation.Matrix.areEqual(mat, mmat, 1e-13), true, 'Eigenvalues and eigenvectors computation - A equal to V*Diag(D)*V^t');
+
+		// Check the computed eigenvalues are the same as the ones provided in the reference
+		var expectedEigenvalues = [[1, 639.62943444], [2, -0.25068702021], [3, -0.25276325141], [16, -0.50027349839], [29, -24.077530173], [30, -114.51117646]];
+		jacobi = PortfolioAllocation.Matrix.eig(mat, {sortedEigenvalues: true});
+		DD = jacobi[1];
+		
+		for (var i = 0; i < expectedEigenvalues.length; ++i) {
+			var expectedEigenValueIdx = expectedEigenvalues[i][0];
+			var expectedEigenValue = expectedEigenvalues[i][1];
+			assert.equal(Math.abs(expectedEigenValue - DD.data[expectedEigenValueIdx -1]) <= 1e-08, true, 'Eigenvalues and eigenvectors computation - Proper eigenvalues');
+		}
+		
+		// Check that the new DD is sorted
+		var isSorted = true;
+		for (var i = 1; i < 30; ++i) {
+			if ( DD.data[i] > DD.data[i-1] ) {
+				isSorted = false;
+				break;
+			}
+		}
+		assert.equal(isSorted, true, 'Eigenvalues and eigenvectors computation - D sorted when requested');
+	}
+});
+
+
 
 QUnit.test('Singular value decomposition', function(assert) {      
   // Test using static data, m = n case
@@ -526,6 +840,17 @@ QUnit.test('Determinant computation', function(assert) {
 });
 
 
+QUnit.test('Trace computation', function(assert) {    
+  // Test using static data  
+  var mat = new PortfolioAllocation.Matrix([[-2,2,-3], [-1,1,3], [2,0,-1]]);
+  var expectedValue = -2;
+
+  assert.equal(Math.abs(mat.trace() - expectedValue) <= 1e-16, true, 'Trace computation');
+  
+  // TODO: Test random data
+});
+
+
 QUnit.test('Matrix copy', function(assert) {    
   // Test using static data
   {
@@ -611,6 +936,7 @@ QUnit.test('Random orthogonal matrix generation', function(assert) {
   }
 });
 
+
 QUnit.test('Random correlation matrix generation', function(assert) {    
 	// Test using random data that the generated matrices C are correlation matrix:
 	// - C must be n by n
@@ -630,8 +956,8 @@ QUnit.test('Random correlation matrix generation', function(assert) {
 			// Check that the matrix is square
 			assert.equal(mat.nbRows == n && mat.nbColumns == n, true, 'Random correlation matrix generation, square - Test #' + l);
 			
-			// Check that the matrix is numerically symmetric
-			assert.equal(mat.isSymmetric(1e-14), true, 'Random correlation matrix generation, symmetric - Test #' + l);
+			// Check that the matrix is truly symmetric
+			assert.equal(mat.isSymmetric(), true, 'Random correlation matrix generation, symmetric - Test #' + l);
 			
 			// Check that the matrix has true unit diagonal
 			var unit_diagonal = true;
@@ -643,11 +969,14 @@ QUnit.test('Random correlation matrix generation', function(assert) {
 			assert.equal(unit_diagonal, true, 'Random correlation matrix generation, unit diagonal - Test #' + l);
 			
 			// Check that the matrix is positive semidefinite
-			// Check that the determinant is >= 0
-			assert.equal(mat.determinant() >= 0, true, 'Random correlation matrix generation, semi-positive definite - Test #' + l);
+			// Check that all the eigenvalues are >= 0, which is implied by the fact that
+			// the lowest eigenvalue is >= 0
+			var jacobi = PortfolioAllocation.Matrix.eig(mat, {sortedEigenvalues: true});
+			var D = jacobi[1];
+			assert.equal(D.data[n-1] >= 0, true, 'Random correlation matrix generation, semi-positive definite - Test #' + l);
 			
-			// Check that all the eigenvalues are >= 0
-			// TODO
+			// Double check with the usage of the dedicated method
+			assert.equal(mat.isCorrelationMatrix(), true, 'Random correlation matrix generation, all inclusive - Test #' + l);
 		}
 	}
 	
@@ -864,7 +1193,7 @@ QUnit.test('Matrix row/columns norms computation', function(assert) {
 });
 
 
-QUnit.test('Linear system solver - Upper triangular system solve via back substitution', function(assert) {    
+QUnit.test('Linear system solver - Systems solve via back and forward substitution', function(assert) {    
   // Test using static data  
   {
       var A = new PortfolioAllocation.Matrix([[1, 2, 1, -1], [0, -4, 1, 7], [0, 0, -2, 1], [0, 0, 0, -1]]);
@@ -873,6 +1202,16 @@ QUnit.test('Linear system solver - Upper triangular system solve via back substi
 	  
 	  var x = PortfolioAllocation.Matrix.linsolveBackSubstitution(A, b);
 	  assert.equal(PortfolioAllocation.Matrix.areEqual(x, expectedX, 1e-14), true, 'Upper triangular linear system solve - Back substitution algorithm #1');
+  }
+  
+  // Test using static data  
+  {
+      var A = new PortfolioAllocation.Matrix([[2, 0, 0], [1, 5, 0], [7, 9, 8]]);
+	  var b = new PortfolioAllocation.Matrix([6, 2, 5]);
+      var expectedX = new PortfolioAllocation.Matrix([3, -0.2, -1.775]);
+	  
+	  var x = PortfolioAllocation.Matrix.linsolveForwardSubstitution(A, b);
+	  assert.equal(PortfolioAllocation.Matrix.areEqual(x, expectedX, 1e-14), true, 'Lower triangular linear system solve - Forward substitution algorithm #1');
   }
   
   // TODO: Test random data
